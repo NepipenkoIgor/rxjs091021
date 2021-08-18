@@ -1,3 +1,4 @@
-import '../../assets/css/style.css'
+import '../../assets/css/style.css';
 import { terminalLog } from '../../utils/log-in-terminal';
-terminalLog('Теория')
+
+terminalLog('Теория');
