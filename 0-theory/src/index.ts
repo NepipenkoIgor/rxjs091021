@@ -1,7 +1,7 @@
 import '../../assets/css/style.css';
-import { terminalLog } from '../../utils/log-in-terminal';
 import { exhaustMap, fromEvent, pluck } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
+import { terminalLog } from '../../utils/log-in-terminal';
 
 terminalLog('Теория');
 // const sequence$ = interval(1000).pipe(switchMap((v) => of(v * 2)));
