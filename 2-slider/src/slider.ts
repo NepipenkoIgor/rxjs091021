@@ -79,4 +79,7 @@ export function sliderSequence$(...sources$: Observable<number>[]): Observable<n
 const resultBtn = document.querySelector('#send-result') as HTMLButtonElement;
 export const sliderResultSequence$ = fromEvent(resultBtn, 'click').pipe(
 	withLatestFrom(sliderSequence$(quality$, rating$, actual$)),
+	// switchMap(() => {
+	// 	return sliderSequence$(quality$, rating$, actual$);
+	// }),
 );

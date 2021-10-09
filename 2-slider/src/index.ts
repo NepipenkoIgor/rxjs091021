@@ -5,6 +5,6 @@ import './styles.css';
 import { sliderResultSequence$ } from './slider';
 import { terminalLog } from '../../utils/log-in-terminal';
 
-sliderResultSequence$.subscribe(([, res]) => {
+sliderResultSequence$.subscribe((res) => {
 	terminalLog(`Send to server ${res}`);
 });

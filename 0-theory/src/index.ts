@@ -1,111 +1,92 @@
 import '../../assets/css/style.css';
-import { filter, interval, map, skip, take } from 'rxjs';
+import { filter, interval, Observable, pipe, Subscriber } from 'rxjs';
 import { terminalLog } from '../../utils/log-in-terminal';
 
 terminalLog('Теория');
-//
-// of(1, 2, 3, 4, 5).subscribe((v) => {
-// 	terminalLog(v);
-// });
 
-// from([1, 2, 3, 4, 5]).subscribe((v) => {
-// 	terminalLog(v);
-// });
-
-// range(1, 10).subscribe((v) => {
-// 	terminalLog(v);
-// });
-// interface IUser {
-// 	profileName: string;
-// 	firstName: string;
-// 	surname: string;
-// 	photo: string;
-// 	country: string;
+// function doNothing(source: Observable<any>) {
+// 	return source;
 // }
 
-// from(
-// 	fetch('http://learn.javascript.ru/courses/groups/api/participants?key=7vr4hi').then((res) =>
-// 		res.json(),
-// 	),
-// )
-// 	.pipe(
-// 		concatAll(),
-// 		map((user: any) => {
-// 			return `${user.firstName} ${user.surname}`;
-// 		}),
-// 		// toArray(),
-// 	)
-// 	.subscribe((v: any) => {
-// 		terminalLog(v);
+// function toText(_source: Observable<any>) {
+// 	return new Observable((subscriber) => {
+// 		subscriber.next('My text');
+// 		subscriber.complete();
+// 	});
+// }
+
+// function double(_source: Observable<number>) {
+// 	return new Observable((subscriber) => {
+// 		_source.subscribe({
+// 			next(v) {
+// 				subscriber.next(v * 2);
+// 			},
+// 			error(err) {
+// 				subscriber.error(err);
+// 			},
+// 			complete() {
+// 				subscriber.complete();
+// 			},
+// 		});
+// 	});
+// }
+//
+// interval(1000)
+// 	.pipe(doNothing, take(4), double)
+// 	.subscribe({
+// 		next: (v) => {
+// 			terminalLog(v as any);
+// 		},
+// 		complete: () => {
+// 			terminalLog('completed');
+// 		},
 // 	});
 
-// const random = Math.round(Math.random() * 10);
-// console.log(random);
-// const sequence$ = iif(
-// 	() => {
-// 		return random > 5;
+// const o$ = new Observable();
+// o$.source = interval(1000);
+// o$.operator = {
+// 	call(subscriber: Subscriber<unknown>, source: any) {
+// 		source.subscribe(subscriber);
 // 	},
-// 	of('First sequence'),
-// 	of('Second sequence'),
-// );
-// const sequence$ = defer(() => {
-// 	if (random < 5) {
-// 		return of('First sequence');
-// 	}
-// 	if (random >= 5 && random < 7) {
-// 		return of('Second sequence');
-// 	}
-// 	return of('Third sequence');
-// });
-//
-// sequence$.subscribe((v: any) => {
-// 	terminalLog(v);
+// };
+
+// const o$ = interval(1000).lift({
+// 	call(subscriber: Subscriber<unknown>, source: any) {
+// 		source.subscribe(subscriber);
+// 	},
 // });
 
-// import fs from 'fs';
-// import util from 'util';
-// import { from, map } from 'rxjs';
+class DoubleSubscriber extends Subscriber<number> {
+	public override next(value: number) {
+		super.next(value * 2);
+	}
+}
 
-// const readFileFn = bindNodeCallback(fs.readFile);
-// const readFile$ = from(util.promisify(fs.readFile)(`${__dirname}/text`));
-// readFileFn(`${__dirname}/text`)
-// readFile$
-// 	.pipe(
-// 		map((buffer) => {
-// 			const str = buffer.toString();
-// 			const regExp = />([^<]+)</;
-// 			const matches = regExp.exec(str);
-// 			return matches && matches[1];
-// 		}),
-// 	)
-// 	.subscribe((v) => {
-// 		console.log(v);
-// 	});
+const double = (source: Observable<number>) => {
+	return source.lift({
+		call(subscriber: Subscriber<unknown>, s: any) {
+			s.subscribe(new DoubleSubscriber(subscriber));
+		},
+	});
+};
 
-//
-// fromEvent(document, 'click')
+// const pipe =
+// 	(...fns: Function[]) =>
+// 	(source: Observable<any>) =>
+// 		fns.reduce((acc, fn) => fn(acc), source);
 
-const sequence$ = interval(1000);
-/**
- * sequence$  ---0---1---2---3---4---5---6---7---
- *      take(5)
- *            ---0---1---2---3---4|
- *      skip(4)
- *            -------------------4|
- *      filter((x)=>x%2 === 0)
- *            -------------------4|
- *       map((x)=>x*2)
- *            -------------------8|
- *
- */
+const doubleWithFilter = pipe(
+	filter((v: any) => !!(v % 2)),
+	double,
+);
 
-sequence$
-	.pipe(
-		take(5),
-		skip(4),
-		filter((x) => x % 2 === 0),
-		map((x) => x * 2),
-	)
-	.subscribe((v: any) => {
-		terminalLog(v);
+interval(1000)
+	.pipe(doubleWithFilter)
+	.subscribe({
+		next: (v) => {
+			terminalLog(v as any);
+		},
+		complete: () => {
+			terminalLog('completed');
+		},
 	});
