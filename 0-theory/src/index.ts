@@ -1,84 +1,111 @@
 import '../../assets/css/style.css';
-import { Observable, Subscriber } from 'rxjs';
+import { filter, interval, map, skip, take } from 'rxjs';
 import { terminalLog } from '../../utils/log-in-terminal';
 
 terminalLog('Теория');
-// const countSequence = new Promise((res) => {
-//     let count = 0;
-//     setInterval(() => {
-//         res(++count);
-//     }, 1000)
-// })
 //
-// countSequence.then((c) => console.log(c));
-// countSequence.then((c) => console.log(c));
-// countSequence.then((c) => console.log(c));
-// countSequence.then((c) => console.log(c));
-// countSequence.then((c) => console.log(c));
+// of(1, 2, 3, 4, 5).subscribe((v) => {
+// 	terminalLog(v);
+// });
 
-// const countSequence = function* iteratorFn() {
-//     let count = 1;
-//     while (true) {
-//         yield count++;
-//     }
-// }();
-//
-// console.log(countSequence.next().value);
-// console.log(countSequence.next().value);
-// console.log(countSequence.next().value);
-// console.log(countSequence.next().value);
-// console.log(countSequence.next().value);
-// console.log(countSequence.next().value);
-// let count = 1;
-//
-//
-//
-// const sequence$ = new Observable((subscriber: Subscriber<any>) => {
-//     console.log('New Observable');
-//     const intervalId = setInterval(() => {
-//         // console.log('interval')
-//         // if(count % 3 === 0) {
-//         //     subscriber.complete();
-//         // }
-//         subscriber.next(++count);
-//     }, 1000)
-//     return () => {
-//         clearInterval(intervalId);
-//         console.log('unsubscribe');
-//     }
-// })
-// const sequence$ = fromEvent<MouseEvent>(document, 'click');
-// console.log(sequence$);
-// const socket: WebSocket = new WebSocket('wss://echo.websocket.org');
-const inputEl = document.querySelector('input') as HTMLInputElement;
-const sequence$ = new Observable((subscriber: Subscriber<any>) => {
-	function listener(e: Event) {
-		subscriber.next((e.target as HTMLInputElement).value);
-	}
-	inputEl.addEventListener('input', listener);
-	return () => {
-		console.log('unsubscribe');
-		inputEl.removeEventListener('message', listener);
-	};
-});
+// from([1, 2, 3, 4, 5]).subscribe((v) => {
+// 	terminalLog(v);
+// });
 
-// function main() {
-//     console.log('Opened');
-//     let count = 0;
-//
-//     setInterval(() => {
-//         socket.send((count++).toString());
-//     }, 2000)
+// range(1, 10).subscribe((v) => {
+// 	terminalLog(v);
+// });
+// interface IUser {
+// 	profileName: string;
+// 	firstName: string;
+// 	surname: string;
+// 	photo: string;
+// 	country: string;
 // }
+
+// from(
+// 	fetch('http://learn.javascript.ru/courses/groups/api/participants?key=7vr4hi').then((res) =>
+// 		res.json(),
+// 	),
+// )
+// 	.pipe(
+// 		concatAll(),
+// 		map((user: any) => {
+// 			return `${user.firstName} ${user.surname}`;
+// 		}),
+// 		// toArray(),
+// 	)
+// 	.subscribe((v: any) => {
+// 		terminalLog(v);
+// 	});
+
+// const random = Math.round(Math.random() * 10);
+// console.log(random);
+// const sequence$ = iif(
+// 	() => {
+// 		return random > 5;
+// 	},
+// 	of('First sequence'),
+// 	of('Second sequence'),
+// );
+// const sequence$ = defer(() => {
+// 	if (random < 5) {
+// 		return of('First sequence');
+// 	}
+// 	if (random >= 5 && random < 7) {
+// 		return of('Second sequence');
+// 	}
+// 	return of('Third sequence');
+// });
 //
-// socket.addEventListener('open', main)
+// sequence$.subscribe((v: any) => {
+// 	terminalLog(v);
+// });
 
-sequence$.subscribe((v) => {
-	terminalLog(`Sub1: ${v}`);
-});
+// import fs from 'fs';
+// import util from 'util';
+// import { from, map } from 'rxjs';
 
-setTimeout(() => {
-	sequence$.subscribe((v) => {
-		terminalLog(`Sub2: ${v}`);
+// const readFileFn = bindNodeCallback(fs.readFile);
+// const readFile$ = from(util.promisify(fs.readFile)(`${__dirname}/text`));
+// readFileFn(`${__dirname}/text`)
+// readFile$
+// 	.pipe(
+// 		map((buffer) => {
+// 			const str = buffer.toString();
+// 			const regExp = />([^<]+)</;
+// 			const matches = regExp.exec(str);
+// 			return matches && matches[1];
+// 		}),
+// 	)
+// 	.subscribe((v) => {
+// 		console.log(v);
+// 	});
+
+//
+// fromEvent(document, 'click')
+
+const sequence$ = interval(1000);
+/**
+ * sequence$  ---0---1---2---3---4---5---6---7---
+ *      take(5)
+ *            ---0---1---2---3---4|
+ *      skip(4)
+ *            -------------------4|
+ *      filter((x)=>x%2 === 0)
+ *            -------------------4|
+ *       map((x)=>x*2)
+ *            -------------------8|
+ *
+ */
+
+sequence$
+	.pipe(
+		take(5),
+		skip(4),
+		filter((x) => x % 2 === 0),
+		map((x) => x * 2),
+	)
+	.subscribe((v: any) => {
+		terminalLog(v);
 	});
-}, 5000);
