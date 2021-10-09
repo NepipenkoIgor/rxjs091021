@@ -1,92 +1,32 @@
 import '../../assets/css/style.css';
-import { filter, interval, Observable, pipe, Subscriber } from 'rxjs';
 import { terminalLog } from '../../utils/log-in-terminal';
+import { exhaustMap, fromEvent, pluck } from 'rxjs';
+import { ajax } from 'rxjs/ajax';
 
 terminalLog('Теория');
+// const sequence$ = interval(1000).pipe(switchMap((v) => of(v * 2)));
 
-// function doNothing(source: Observable<any>) {
-// 	return source;
-// }
+const inputEl = document.querySelector('input') as HTMLInputElement;
 
-// function toText(_source: Observable<any>) {
-// 	return new Observable((subscriber) => {
-// 		subscriber.next('My text');
-// 		subscriber.complete();
-// 	});
-// }
-
-// function double(_source: Observable<number>) {
-// 	return new Observable((subscriber) => {
-// 		_source.subscribe({
-// 			next(v) {
-// 				subscriber.next(v * 2);
-// 			},
-// 			error(err) {
-// 				subscriber.error(err);
-// 			},
-// 			complete() {
-// 				subscriber.complete();
-// 			},
-// 		});
-// 	});
-// }
-//
-// interval(1000)
-// 	.pipe(doNothing, take(4), double)
-// 	.subscribe({
-// 		next: (v) => {
-// 			terminalLog(v as any);
-// 		},
-// 		complete: () => {
-// 			terminalLog('completed');
-// 		},
-// 	});
-
-// const o$ = new Observable();
-// o$.source = interval(1000);
-// o$.operator = {
-// 	call(subscriber: Subscriber<unknown>, source: any) {
-// 		source.subscribe(subscriber);
-// 	},
-// };
-
-// const o$ = interval(1000).lift({
-// 	call(subscriber: Subscriber<unknown>, source: any) {
-// 		source.subscribe(subscriber);
-// 	},
-// });
-
-class DoubleSubscriber extends Subscriber<number> {
-	public override next(value: number) {
-		super.next(value * 2);
-	}
-}
-
-const double = (source: Observable<number>) => {
-	return source.lift({
-		call(subscriber: Subscriber<unknown>, s: any) {
-			s.subscribe(new DoubleSubscriber(subscriber));
-		},
-	});
-};
-
-// const pipe =
-// 	(...fns: Function[]) =>
-// 	(source: Observable<any>) =>
-// 		fns.reduce((acc, fn) => fn(acc), source);
-
-const doubleWithFilter = pipe(
-	filter((v: any) => !!(v % 2)),
-	double,
+const sequence$ = fromEvent(inputEl, 'input').pipe(
+	pluck('target', 'value'),
+	exhaustMap((text) => {
+		return ajax({
+			url: `http://learn.javascript.ru/courses/groups/api/participants?key=7vr4hi&text=${text}`,
+			method: 'GET',
+			crossDomain: true,
+		});
+	}),
+	// mergeAll(),
+	// map + mergeAll = mergeMap
+	// map + switchAll = switchMap
+	// map + concatAll = concatMap  mergeMap(1)
+	// map + exhaustAll = exhaustMap  mergeMap(1)
 );
 
-interval(1000)
-	.pipe(doubleWithFilter)
-	.subscribe({
-		next: (v) => {
-			terminalLog(v as any);
-		},
-		complete: () => {
-			terminalLog('completed');
-		},
-	});
+sequence$.subscribe((v: any) => {
+	console.log(v);
+	// v.subscribe((v1) => {
+	// 	terminalLog(v1);
+	// });
+});
