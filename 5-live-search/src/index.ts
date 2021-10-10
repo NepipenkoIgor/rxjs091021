@@ -1,12 +1,18 @@
 import 'bootstrap';
 import '../../assets/css/style.css';
 import './styles.css';
-import { fromEvent, tap } from 'rxjs';
+import { Subject, tap } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
 import { IResult, liveSearch$, requestRepo$ } from './live-search';
 
 const inputEl = document.querySelector('#search') as HTMLInputElement;
 const container = document.querySelector('.container') as HTMLDivElement;
+
+const searchSequence$ = new Subject<InputEvent>();
+
+inputEl.addEventListener('input', (e) => {
+	searchSequence$.next(e as InputEvent);
+});
 
 export function createCard({ name, description, owner: { avatar_url } }: IResult): string {
 	return `
@@ -27,7 +33,8 @@ export function createRow(htmlStr: string[]): string {
 }
 
 liveSearch$(
-	fromEvent<InputEvent>(inputEl, 'input'),
+	// fromEvent<InputEvent>(inputEl, 'input'),
+	searchSequence$.asObservable(),
 	(text: string) =>
 		requestRepo$(
 			ajax<{ items: IResult[] }>({

@@ -1,8 +1,10 @@
 import {
 	bufferCount,
+	catchError,
 	concatAll,
 	debounceTime,
 	distinctUntilChanged,
+	EMPTY,
 	filter,
 	map,
 	Observable,
@@ -34,6 +36,10 @@ export function requestRepo$(
 			return `${resultHtmlStr}${rowFn(htmlStr)}`;
 		}, ''),
 		map((html: string) => html.trim().replace(/\s+(<)/g, '<')),
+		catchError((err) => {
+			console.log(err);
+			return EMPTY;
+		}),
 	);
 }
 
