@@ -1,59 +1,57 @@
 import '../../assets/css/style.css';
-import { interval, share, Subject } from 'rxjs';
+import { observeOn, queueScheduler, Subject, take } from 'rxjs';
 import { terminalLog } from '../../utils/log-in-terminal';
 
 terminalLog('Теория');
 
-// const subject = new Subject();
-// const sequenceConnectable$ = interval(1000).pipe(
-// 	// publish(), // multicast + subject
-// 	// refCount(),
-// 	share(), // publish + refCount
-// 	// multicast(subject)
-// ); // as ConnectableObservable<any>;
-// // sequenceConnectable$.connect();
-// const sub = sequenceConnectable$.subscribe((v) => {
-// 	terminalLog(`Sub 1=> ${v}`);
+// console.log('start');
+// // setTimeout(() => console.log('time1'));
+// // setTimeout(() => console.log('time2'));
+// // Promise.resolve().then(() => console.log('promise1'));
+// // Promise.resolve().then(() => console.log('promise2'));
+// of(1, 2, 3, 4, asapScheduler).subscribe((v) => {
+// 	console.log(v);
 // });
-//
-// setTimeout(() => {
-// 	sub.unsubscribe();
-// }, 3000);
-//
-// setTimeout(() => {
-// 	sequenceConnectable$.subscribe((v) => {
-// 		terminalLog(`Sub 2=> ${v}`);
-// 	});
-// }, 5000);
+// console.log('end');
 
-/**
- * ConnectableObservable, refCount, publish,publishReplay, publishLast, publishBehaviour, multicast,
+/*
+   ----------time1-------time2--------------
+   start
+   end
+
+   promise1
+   promise2
  */
 
-/**
- * connectable, connect, share, shareReplay
- */
+// const sequence1$ = scheduled([1, 2], asapScheduler);
+// const sequence2$ = of(10);
+//
+// const sequence$ = combineLatest([sequence1$, sequence2$]).pipe(map(([x, y]) => x + y));
 
-// const sequence$ = connectable(interval(1000), {
-// 	connector: () => new Subject(),
+// console.log('start');
+// const sequence$ = of(1, 2, 3, 4, 5).pipe(
+// 	// subscribeOn(asapScheduler),
+// 	tap((v) => {
+// 		console.log(`tap 1===> ${v}`);
+// 	}),
+// 	observeOn(asapScheduler),
+// 	tap((v) => {
+// 		console.log(`tap 2===> ${v}`);
+// 	}),
+// );
+// sequence$.subscribe((v) => {
+// 	console.log('Sub => ', v);
 // });
-// sequence$.connect();
+// console.log('end');
 
-const sequence$ = interval(1000).pipe(
-	share({
-		connector: () => new Subject(),
-		resetOnRefCountZero: true,
-	}),
-);
-const sub = sequence$.subscribe((v) => {
-	terminalLog(`Sub 1=> ${v}`);
+const signal = new Subject<number>();
+let count = 0;
+const someCalc = (_count: number) => console.log('do some calc');
+
+console.log('start');
+signal.pipe(take(1600), observeOn(queueScheduler)).subscribe(() => {
+	someCalc(count);
+	signal.next(count++);
 });
-setTimeout(() => {
-	sub.unsubscribe();
-}, 3000);
-
-setTimeout(() => {
-	sequence$.subscribe((v) => {
-		terminalLog(`Sub 2=> ${v}`);
-	});
-}, 5000);
+signal.next(count++);
+console.log('end');
